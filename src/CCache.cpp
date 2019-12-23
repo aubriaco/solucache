@@ -96,7 +96,6 @@ void CCache::node(solusek::INetHandlerSocket *socket)
 			}
 			else if(action == 2)
 			{
-				fprintf(stdout, "GET\n");
 				std::string key = readKey(socket);
 				if(M.count(key) > 0)
 				{
