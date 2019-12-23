@@ -20,3 +20,7 @@ make
 ```
 ./solucache
 ```
+
+## To implement you can use the SoluCache Client Library for C++
+
+https://github.com/aubriaco/libsolucache-client
