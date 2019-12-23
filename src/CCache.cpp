@@ -1,3 +1,9 @@
+/*
+** SoluCache by Alessandro Ubriaco
+**
+** Copyright (c) 2019 Alessandro Ubriaco
+**
+*/
 #include "CCache.h"
 #include <unistd.h>
 

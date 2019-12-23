@@ -1,5 +1,8 @@
-/**
- * Created by Alessandro Ubriaco
+/*
+** SoluCache by Alessandro Ubriaco
+**
+** Copyright (c) 2019 Alessandro Ubriaco
+**
 */
 #include <unistd.h>
 #include "CCache.h"

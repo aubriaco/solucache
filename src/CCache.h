@@ -1,3 +1,9 @@
+/*
+** SoluCache by Alessandro Ubriaco
+**
+** Copyright (c) 2019 Alessandro Ubriaco
+**
+*/
 #ifndef __C_CACHE_INCLUDED__
 #define __C_CACHE_INCLUDED__
 #include <solusek/solusek.h>
