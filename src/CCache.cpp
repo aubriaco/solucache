@@ -18,7 +18,7 @@ void interruptCallback(int sig)
 	solusek::INetHandlerSocket *socket = solusek::createNetHandlerSocket();
 	socket->connect("127.0.0.1", 18001);
 	int action = 0;
-	socket->writeBuffer(&action, sizeof(int));
+	socket->writeBuffer(&action, 4);
 	socket->dispose();
 }
 
@@ -42,11 +42,11 @@ std::string readKey(solusek::INetHandlerSocket *socket)
 {
 	std::string key;
 	size_t sz = 0;
-	socket->readBuffer(&sz, sizeof(size_t));
+	socket->readBuffer(&sz, 8);
 	for(size_t n = 0; n < sz; n++)
 	{
 		char c;
-		socket->readBuffer(&c, sizeof(char));
+		socket->readBuffer(&c, 1);
 		key.push_back(c);
 	}
 	return key;
@@ -56,12 +56,12 @@ std::vector<unsigned char> readData(solusek::INetHandlerSocket *socket)
 {
 	std::vector<unsigned char> data;
 	size_t sz = 0;
-	socket->readBuffer(&sz, sizeof(size_t));
+	socket->readBuffer(&sz, 8);
   data.reserve(sz);
   for(size_t n = 0; n < sz; n++)
   {
  	 unsigned char c;
- 	 socket->readBuffer(&c, sizeof(unsigned char));
+ 	 socket->readBuffer(&c, 1);
  	 data.push_back(c);
   }
 	return data;
@@ -70,10 +70,10 @@ std::vector<unsigned char> readData(solusek::INetHandlerSocket *socket)
 void writeData(solusek::INetHandlerSocket *socket, std::vector<unsigned char> data)
 {
 	size_t sz = data.size();
-	socket->writeBuffer(&sz, sizeof(size_t));
+	socket->writeBuffer(&sz, 8);
 	for(std::vector<unsigned char>::iterator it = data.begin(); it != data.end(); ++it)
 	{
-		socket->writeBuffer(&(*it), sizeof(unsigned char));
+		socket->writeBuffer(&(*it), 1);
 	}
 }
 
@@ -86,7 +86,7 @@ void CCache::node(solusek::INetHandlerSocket *socket)
 		while(true)
 		{
 		  int action = 0;
-		  socket->readBuffer(&action, sizeof(int));
+		  socket->readBuffer(&action, 4);
 
 			if(action == 1)
 			{
@@ -112,7 +112,7 @@ void CCache::node(solusek::INetHandlerSocket *socket)
 				else
 				{
 					size_t r = 0;
-					socket->writeBuffer(&r, sizeof(size_t));
+					socket->writeBuffer(&r, 8);
 				}
 			}
 		  else if(action == 3)
@@ -141,7 +141,7 @@ void CCache::node(solusek::INetHandlerSocket *socket)
 				if(Q[key].size() == 0)
 				{
 					PopSemaphor = false;
-					socket->writeBuffer(&ret, sizeof(int));
+					socket->writeBuffer(&ret, 4);
 				}
 				else
 				{
