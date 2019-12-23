@@ -203,7 +203,7 @@ void CCache::cleanup()
 
 void CCache::run()
 {
-	fprintf(stdout, "Queue Initialize!\n");
+	fprintf(stdout, "Cache Initialize!\n");
 	pthread_attr_t tattr;
 	pthread_attr_init(&tattr);
 	pthread_attr_setdetachstate(&tattr,PTHREAD_CREATE_DETACHED);
