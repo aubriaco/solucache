@@ -77,80 +77,95 @@ void CCache::node(solusek::INetHandlerSocket *socket)
 
 	try
 	{
-	  int action = 0;
-	  socket->readBuffer(&action, sizeof(int));
-
-		if(action == 1)
+		while(true)
 		{
-			CCachePacket packet;
-			packet.T = time(0);
-			packet.Expires = 0;
-			size_t sz = 0;
-			packet.Key = readKey(socket);
-			fprintf(stdout, "Action detected: PUT: %s\n", packet.Key.c_str());
-			packet.Data = readData(socket);
+		  int action = 0;
+		  socket->readBuffer(&action, sizeof(int));
 
-			M[packet.Key] = packet;
-		}
-		else if(action == 2)
-		{
-			std::string key = readKey(socket);
-			if(M.count(key) > 0)
+			if(action == 1)
 			{
-				fprintf(stdout, "Action detected: GET: %s\n", key.c_str());
-				CCachePacket packet = M[key];
-				writeData(socket, packet.Data);
+				CCachePacket packet;
+				packet.T = time(0);
+				packet.Expires = 0;
+				size_t sz = 0;
+				packet.Key = readKey(socket);
+				fprintf(stdout, "Action detected: PUT: %s\n", packet.Key.c_str());
+				packet.Data = readData(socket);
+
+				M[packet.Key] = packet;
 			}
-			else
+			else if(action == 2)
 			{
-				size_t r = 0;
-				socket->writeBuffer(&r, sizeof(size_t));
+				fprintf(stdout, "GET\n");
+				std::string key = readKey(socket);
+				if(M.count(key) > 0)
+				{
+					fprintf(stdout, "Action detected: GET: %s\n", key.c_str());
+					CCachePacket packet = M[key];
+					writeData(socket, packet.Data);
+				}
+				else
+				{
+					size_t r = 0;
+					socket->writeBuffer(&r, sizeof(size_t));
+				}
 			}
-		}
-	  else if(action == 3)
-	  {
-	    CCachePacket packet;
-			packet.T = time(0);
-			packet.Expires = 0;
-	    packet.Key = readKey(socket);
-			fprintf(stdout, "Action detected: QUEUE-PUSH: %s\n", packet.Key.c_str());
-			packet.Data = readData(socket);
+		  else if(action == 3)
+		  {
+		    CCachePacket packet;
+				packet.T = time(0);
+				packet.Expires = 0;
+		    packet.Key = readKey(socket);
+				fprintf(stdout, "Action detected: QUEUE-PUSH: %s\n", packet.Key.c_str());
+				packet.Data = readData(socket);
 
-			while(PopSemaphor)
-				sleep(1);
-			PopSemaphor = true;
-	    Q[packet.Key].push(packet);
-			PopSemaphor = false;
-	  }
-	  else if(action == 4)
-	  {
-			std::string key = readKey(socket);
-
-			int ret = 0;
-			while(PopSemaphor)
-				sleep(1);
-			PopSemaphor = true;
-			if(Q[key].size() == 0)
-			{
+				while(PopSemaphor)
+					sleep(1);
+				PopSemaphor = true;
+		    Q[packet.Key].push(packet);
 				PopSemaphor = false;
-				socket->writeBuffer(&ret, sizeof(int));
-			}
-			else
-			{
-				fprintf(stdout, "Action detected: QUEUE-POP: %s\n", key.c_str());
-				ret = 1;
-				socket->writeBuffer(&ret, sizeof(int));
-		    CCachePacket packet = Q[key].front();
-				Q[key].pop();
-				PopSemaphor = false;
+		  }
+		  else if(action == 4)
+		  {
+				std::string key = readKey(socket);
 
-				writeData(socket, packet.Data);
+				int ret = 0;
+				while(PopSemaphor)
+					sleep(1);
+				PopSemaphor = true;
+				if(Q[key].size() == 0)
+				{
+					PopSemaphor = false;
+					socket->writeBuffer(&ret, sizeof(int));
+				}
+				else
+				{
+					fprintf(stdout, "Action detected: QUEUE-POP: %s\n", key.c_str());
+					ret = 1;
+					socket->writeBuffer(&ret, sizeof(int));
+			    CCachePacket packet = Q[key].front();
+					Q[key].pop();
+					PopSemaphor = false;
+
+					writeData(socket, packet.Data);
+				}
+		  }
+			else if(action == 5)
+			{
+				std::string key = readKey(socket);
+				if(M.count(key) > 0)
+				{
+					fprintf(stdout, "Action detected: EXPIRE: %s\n", key.c_str());
+					time_t t;
+					socket->readBuffer(&t, 8);
+					M[key].Expires = time(0) + t;
+				}
 			}
-	  }
+		}
 	}
 	catch(int e)
 	{
-		fprintf(stderr, "SOCKET EXCEPTION %i\n", e);
+		fprintf(stdout, "Socket closed.\n");
 	}
 	//fprintf(stdout, "CLEANUP\n");
   socket->dispose();
@@ -166,23 +181,24 @@ void *CCache::cleanupThread(void *param)
 
 void CCache::cleanup()
 {
+		time_t now;
+		bool removed;
 		while(!Interrupt)
 		{
-			while(ISemaphor) sleep(1);
-			ISemaphor = true;
-			for(std::map<std::string, time_t>::iterator it = T.begin(); it != T.end(); ++it)
+			removed = false;
+			now = time(0);
+			for(std::map<std::string, CCachePacket>::iterator it = M.begin(); it != M.end(); ++it)
 			{
-				if(time(0) - it->second > 60)
+				if(it->second.Expires < now)
 				{
+					M.erase(it);
 					fprintf(stdout, "Expired: %s\n", it->first.c_str());
-					T.erase(it);
-					I.erase(it->first);
-					S.erase(it->first);
 					break;
 				}
 			}
-			ISemaphor = false;
-			sleep(15);
+			if(removed)
+				continue;
+			sleep(1);
 		}
 }
 
