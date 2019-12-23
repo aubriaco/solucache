@@ -142,7 +142,6 @@ void CCache::node(solusek::INetHandlerSocket *socket)
 				{
 					fprintf(stdout, "Action detected: QUEUE-POP: %s\n", key.c_str());
 					ret = 1;
-					socket->writeBuffer(&ret, sizeof(int));
 			    CCachePacket packet = Q[key].front();
 					Q[key].pop();
 					PopSemaphor = false;
@@ -189,7 +188,7 @@ void CCache::cleanup()
 			now = time(0);
 			for(std::map<std::string, CCachePacket>::iterator it = M.begin(); it != M.end(); ++it)
 			{
-				if(it->second.Expires < now)
+				if(it->second.Expires != 0 && it->second.Expires < now)
 				{
 					M.erase(it);
 					fprintf(stdout, "Expired: %s\n", it->first.c_str());
@@ -205,6 +204,10 @@ void CCache::cleanup()
 void CCache::run()
 {
 	fprintf(stdout, "Queue Initialize!\n");
+	pthread_attr_t tattr;
+	pthread_attr_init(&tattr);
+	pthread_attr_setdetachstate(&tattr,PTHREAD_CREATE_DETACHED);
+
 	pthread_t cleanupThreadId = 0;
 	pthread_create(&cleanupThreadId, 0, cleanupThread, (void*)this);
   solusek::IServer *server = solusek::createServer();
@@ -218,14 +221,20 @@ void CCache::run()
     solusek::INetHandlerSocket *socket = mainSocket->accept();
 
 		if(Interrupt)
+		{
+			socket->dispose();
 			break;
+		}
 
     CCacheThreadPackage *pkg = new CCacheThreadPackage();
     pkg->Cache = this;
     pkg->Socket = socket;
     pthread_t threadId = 0;
-    pthread_create(&threadId, 0, nodeThread, (void*)pkg);
+    pthread_create(&threadId, &tattr, nodeThread, (void*)pkg);
+		Threads.push_back(CCacheThread(threadId));
   }
+
+	pthread_join(cleanupThreadId, 0);
 
   mainSocket->dispose();
   server->dispose();

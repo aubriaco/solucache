@@ -19,10 +19,24 @@ public:
   CCacheIsSet() : B(false) { }
 };
 
+class CCacheThread
+{
+public:
+  pthread_t TID;
+  bool Done;
+
+  CCacheThread(pthread_t tid)
+  {
+    TID = tid;
+    Done = false;
+  }
+};
+
 class CCache
 {
 private:
   bool PopSemaphor, ISemaphor;
+  std::vector<CCacheThread> Threads;
   std::map<std::string, CCachePacket> M;
   std::map<std::string, std::queue<CCachePacket> > Q;
   std::map<std::string, CCacheIsSet> S;
