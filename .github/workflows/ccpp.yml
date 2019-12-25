@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: prepare
+      run: |
+        cd ..
+        git clone https://github.com/aubriaco/solusek
+        cd solusek
+        cmake src/
+        make
+        make install
+    - name: make
+      run: |
+        cmake src/
+        make
