@@ -6,7 +6,7 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v1
     - name: prepare
@@ -16,6 +16,7 @@ jobs:
         cd solusek
         cmake src/
         make
+        mkdir -p /usr/local/lib
         make install
     - name: make
       run: |
