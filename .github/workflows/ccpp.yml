@@ -20,10 +20,9 @@ jobs:
         cd build
         cmake ../src/
         make
+        sudo make install
     - name: make
       run: |
-        export LD_LIBRARY_PATH="../solusek/"
-        export CPLUS_INCLUDE_PATH="../solusek/src/include/"
         mkdir build/
         cd build/
         cmake ../src
