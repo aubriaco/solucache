@@ -16,9 +16,9 @@ jobs:
         cd solusek
         cmake src/
         make
-        mkdir -p /usr/local/lib
-        make install
     - name: make
       run: |
+        export LD_LIBRARY_PATH="../solusek/"
+        export CPLUS_INCLUDE_PATH="../solusek/src/include/"
         cmake src/
         make
