@@ -11,7 +11,7 @@ https://github.com/aubriaco/libsolunet
 ```
 mkdir build/
 cd build/
-cmake ../src
+cmake ..
 make
 ```
 
