@@ -6,8 +6,9 @@
 */
 #ifndef __C_CACHE_INCLUDED__
 #define __C_CACHE_INCLUDED__
-#include <solusek/solusek.h>
+#include <solunet.h>
 #include <queue>
+#include <map>
 
 class CCachePacket
 {
@@ -54,7 +55,7 @@ public:
   void run();
 
   static void *nodeThread(void *param);
-  void node(solusek::INetHandlerSocket *socket);
+  void node(solunet::ISocket *socket);
 
   static void *cleanupThread(void *param);
   void cleanup();

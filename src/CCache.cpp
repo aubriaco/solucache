@@ -6,16 +6,17 @@
 */
 #include "CCache.h"
 #include <unistd.h>
+#include <signal.h>
 
 static bool Interrupt = false;
 
-solusek::INetHandlerSocket *g_MainSocket = 0;
+solunet::ISocket *g_MainSocket = 0;
 
 void interruptCallback(int sig)
 {
 	printf("Interrupt signal called.\n");
 	Interrupt = true;
-	solusek::INetHandlerSocket *socket = solusek::createNetHandlerSocket();
+	solunet::ISocket *socket = solunet::createSocket();
 	socket->connect("127.0.0.1", 18001);
 	int action = 0;
 	socket->writeBuffer(&action, 4);
@@ -26,7 +27,7 @@ class CCacheThreadPackage
 {
 public:
   CCache *Cache;
-  solusek::INetHandlerSocket *Socket;
+  solunet::ISocket *Socket;
 };
 
 void *CCache::nodeThread(void *param)
@@ -38,7 +39,7 @@ void *CCache::nodeThread(void *param)
   return 0;
 }
 
-std::string readKey(solusek::INetHandlerSocket *socket)
+std::string readKey(solunet::ISocket *socket)
 {
 	std::string key;
 	size_t sz = 0;
@@ -52,7 +53,7 @@ std::string readKey(solusek::INetHandlerSocket *socket)
 	return key;
 }
 
-std::vector<unsigned char> readData(solusek::INetHandlerSocket *socket)
+std::vector<unsigned char> readData(solunet::ISocket *socket)
 {
 	std::vector<unsigned char> data;
 	size_t sz = 0;
@@ -67,7 +68,7 @@ std::vector<unsigned char> readData(solusek::INetHandlerSocket *socket)
 	return data;
 }
 
-void writeData(solusek::INetHandlerSocket *socket, std::vector<unsigned char> data)
+void writeData(solunet::ISocket *socket, std::vector<unsigned char> data)
 {
 	size_t sz = data.size();
 	socket->writeBuffer(&sz, 8);
@@ -77,7 +78,7 @@ void writeData(solusek::INetHandlerSocket *socket, std::vector<unsigned char> da
 	}
 }
 
-void CCache::node(solusek::INetHandlerSocket *socket)
+void CCache::node(solunet::ISocket *socket)
 {
 	socket->setThrowExceptions(true);
 
@@ -215,15 +216,19 @@ void CCache::run()
 
 	pthread_t cleanupThreadId = 0;
 	pthread_create(&cleanupThreadId, 0, cleanupThread, (void*)this);
-  solusek::IServer *server = solusek::createServer();
-  server->setInterruptCallback(interruptCallback);
 
-  solusek::INetHandlerSocket *mainSocket = solusek::createNetHandlerSocket();
+  struct sigaction sigIntHandler;
+  sigIntHandler.sa_handler = interruptCallback;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  sigaction(SIGINT, &sigIntHandler, NULL);
+
+  solunet::ISocket *mainSocket = solunet::createSocket();
   mainSocket->bind(18001);
   mainSocket->listen();
   while(!Interrupt)
   {
-    solusek::INetHandlerSocket *socket = mainSocket->accept();
+    solunet::ISocket *socket = mainSocket->accept();
 
 		if(Interrupt)
 		{
@@ -242,5 +247,4 @@ void CCache::run()
 	pthread_join(cleanupThreadId, 0);
 
   mainSocket->dispose();
-  server->dispose();
 }

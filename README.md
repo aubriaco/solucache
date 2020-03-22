@@ -2,9 +2,9 @@
 
 ## Dependencies
 
-SoluCache depends on solusek which can be found here:
+SoluCache depends on libsolunet which can be found here:
 
-https://github.com/aubriaco/solusek
+https://github.com/aubriaco/libsolunet
 
 ## To build
 
