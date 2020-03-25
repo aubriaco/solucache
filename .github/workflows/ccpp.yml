@@ -27,3 +27,7 @@ jobs:
         cd build/
         cmake ..
         make
+    - uses: actions/upload-artifact@v1
+      with:
+        name: solucache
+        path: build/solucache
