@@ -27,7 +27,11 @@ jobs:
         cd build/
         cmake ..
         make
-    - uses: actions/upload-artifact@v1
-      with:
-        name: solucache
-        path: build/solucache
+    - name: docker
+      run: |
+        docker build -t solucache
+    - name: deploy
+      run: |
+        docker login docker.pkg.github.com -u aubriaco --password ${{ secrets.GITHUB_TOKEN }}
+        docker tag solucache docker.pkg.github.com/aubriaco/solucache/solucache:latest
+        docker push docker.pkg.github.com/aubriaco/solucache/solucache:latest
