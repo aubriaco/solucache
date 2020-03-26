@@ -1,12 +1,12 @@
 FROM alpine:latest AS compile-image
 RUN apk add libressl-dev make cmake g++ libstdc++ git
 ARG CPU_COUNT
-RUN git clone https://github.com/weidai11/cryptopp.git && cd cryptopp && make -j${CPU_COUNT} && make install && ln -s /usr/local/lib/libcryptopp.a /usr/local/lib/libcrypto++.a && ln -s /usr/local/include/cryptopp/ /usr/local/include/crypto++
-RUN git clone https://github.com/aubriaco/libsolunet.git && mkdir libsolunet/build && cd libsolunet/build && cmake .. && make -j${CPU_COUNT} && make install
+RUN git clone https://github.com/weidai11/cryptopp.git && cd cryptopp && make -j && make install && ln -s /usr/local/lib/libcryptopp.a /usr/local/lib/libcrypto++.a && ln -s /usr/local/include/cryptopp/ /usr/local/include/crypto++
+RUN git clone https://github.com/aubriaco/libsolunet.git && mkdir libsolunet/build && cd libsolunet/build && cmake .. && make -j && make install
 
 RUN mkdir /solucache
 COPY src/ /solucache/src/
-RUN mkdir /solucache/build && cd /solucache/build && cmake ../src && make -j${CPU_COUNT}
+RUN mkdir /solucache/build && cd /solucache/build && cmake ../src && make
 
 FROM alpine:latest AS runtime-image
 
