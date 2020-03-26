@@ -13,4 +13,4 @@ FILE(GLOB SRCS "src/*.cpp")
 ## Define the executable
 add_executable(${PROJECT_NAME} ${SRCS})
 
-target_link_libraries(${PROJECT_NAME} solunet ssl crypto crypto++ pthread)
+target_link_libraries(${PROJECT_NAME} solunet ssl crypto pthread)
