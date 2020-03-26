@@ -4,6 +4,7 @@ ARG CPU_COUNT
 RUN git clone https://github.com/aubriaco/libsolunet.git && mkdir libsolunet/build && cd libsolunet/build && cmake .. && make -j && make install
 
 RUN mkdir /solucache
+COPY CMakeLists.txt /solucache/CMakeLists.txt
 COPY src/ /solucache/src/
 RUN mkdir /solucache/build && cd /solucache/build && cmake .. && make
 
