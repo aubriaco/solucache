@@ -5,7 +5,7 @@ RUN git clone https://github.com/aubriaco/libsolunet.git && mkdir libsolunet/bui
 
 RUN mkdir /solucache
 COPY src/ /solucache/src/
-RUN mkdir /solucache/build && cd /solucache/build && cmake ../src && make
+RUN mkdir /solucache/build && cd /solucache/build && cmake .. && make
 
 FROM alpine:latest AS runtime-image
 
